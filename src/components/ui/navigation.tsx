@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Search, Heart, Calendar, Trophy, User, Menu, X } from "lucide-react";
+import { BookOpen, Search, Heart, Calendar, Trophy, User, Menu, X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 const navItems = [
   { icon: BookOpen, label: "Notes", href: "#notes" },
@@ -12,6 +14,8 @@ const navItems = [
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -43,12 +47,36 @@ export function Navigation() {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-            <Button size="sm" className="campus-gradient text-white">
-              Join Campus
-            </Button>
+            {user ? (
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-muted-foreground">Welcome back!</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={signOut}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => navigate('/auth')}
+                >
+                  Sign In
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="campus-gradient text-white"
+                  onClick={() => navigate('/auth')}
+                >
+                  Join Campus
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -80,12 +108,35 @@ export function Navigation() {
               </a>
             ))}
             <div className="pt-3 border-t space-y-2">
-              <Button variant="ghost" size="sm" className="w-full justify-start">
-                Sign In
-              </Button>
-              <Button size="sm" className="w-full campus-gradient text-white">
-                Join Campus
-              </Button>
+              {user ? (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={signOut}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              ) : (
+                <>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full justify-start"
+                    onClick={() => navigate('/auth')}
+                  >
+                    Sign In
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="w-full campus-gradient text-white"
+                    onClick={() => navigate('/auth')}
+                  >
+                    Join Campus
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

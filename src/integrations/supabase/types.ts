@@ -14,7 +14,203 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          current_attendees: number | null
+          description: string | null
+          event_date: string
+          id: string
+          location: string | null
+          max_attendees: number | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_attendees?: number | null
+          description?: string | null
+          event_date: string
+          id?: string
+          location?: string | null
+          max_attendees?: number | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_attendees?: number | null
+          description?: string | null
+          event_date?: string
+          id?: string
+          location?: string | null
+          max_attendees?: number | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lost_found: {
+        Row: {
+          contact_info: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          location: string | null
+          status: string | null
+          title: string
+          type: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_info?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          status?: string | null
+          title: string
+          type?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_info?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          status?: string | null
+          title?: string
+          type?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          content: string | null
+          course: string | null
+          created_at: string
+          downloads: number | null
+          file_url: string | null
+          id: string
+          likes: number | null
+          semester: string | null
+          subject: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          course?: string | null
+          created_at?: string
+          downloads?: number | null
+          file_url?: string | null
+          id?: string
+          likes?: number | null
+          semester?: string | null
+          subject?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          course?: string | null
+          created_at?: string
+          downloads?: number | null
+          file_url?: string | null
+          id?: string
+          likes?: number | null
+          semester?: string | null
+          subject?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          full_name: string | null
+          id: string
+          points: number | null
+          updated_at: string
+          user_id: string
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          points?: number | null
+          updated_at?: string
+          user_id: string
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          full_name?: string | null
+          id?: string
+          points?: number | null
+          updated_at?: string
+          user_id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
