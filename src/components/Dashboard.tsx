@@ -45,6 +45,30 @@ export function Dashboard() {
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [isLostFoundDialogOpen, setIsLostFoundDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [selectedType, setSelectedType] = useState("");
+
+  const handleFileUpload = async (file: File, bucket: string) => {
+    if (!user) return null;
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+    
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(fileName, file);
+      
+    if (error) {
+      toast({ title: "File upload failed", description: error.message, variant: "destructive" });
+      return null;
+    }
+    
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(fileName);
+      
+    return publicUrl;
+  };
 
   const handleAddNote = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,16 +77,38 @@ export function Dashboard() {
       return;
     }
 
+    setUploading(true);
     const formData = new FormData(e.currentTarget);
+    const file = formData.get('file') as File;
+    
+    let fileUrl = null;
+    if (file && file.size > 0) {
+      // Validate file type for notes (images, PDFs, Word docs)
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({ title: "Invalid file type", description: "Please upload images, PDFs, or Word documents only", variant: "destructive" });
+        setUploading(false);
+        return;
+      }
+      
+      fileUrl = await handleFileUpload(file, 'notes-files');
+      if (!fileUrl) {
+        setUploading(false);
+        return;
+      }
+    }
+
     const { error } = await supabase.from('notes').insert({
       title: formData.get('title') as string,
       content: formData.get('content') as string,
       subject: formData.get('subject') as string,
       course: formData.get('course') as string,
       semester: formData.get('semester') as string,
+      file_url: fileUrl,
       user_id: user.id
     });
 
+    setUploading(false);
     if (error) {
       toast({ title: "Error adding note", description: error.message, variant: "destructive" });
     } else {
@@ -79,21 +125,52 @@ export function Dashboard() {
       return;
     }
 
+    setUploading(true);
     const formData = new FormData(e.currentTarget);
+    const file = formData.get('image') as File;
+    const itemType = formData.get('type') as string;
+    
+    let imageUrl = null;
+    // Only allow image uploads for "lost" items, not "found" items
+    if (file && file.size > 0) {
+      if (itemType === 'found') {
+        toast({ title: "Images not allowed", description: "Image uploads are only allowed for lost items", variant: "destructive" });
+        setUploading(false);
+        return;
+      }
+      
+      // Validate file type for lost items (images only)
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({ title: "Invalid file type", description: "Please upload images only", variant: "destructive" });
+        setUploading(false);
+        return;
+      }
+      
+      imageUrl = await handleFileUpload(file, 'lost-found-images');
+      if (!imageUrl) {
+        setUploading(false);
+        return;
+      }
+    }
+
     const { error } = await supabase.from('lost_found').insert({
       title: formData.get('title') as string,
       description: formData.get('description') as string,
-      type: formData.get('type') as string,
+      type: itemType,
       location: formData.get('location') as string,
       contact_info: formData.get('contact_info') as string,
+      image_url: imageUrl,
       user_id: user.id
     });
 
+    setUploading(false);
     if (error) {
       toast({ title: "Error reporting item", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Item reported successfully!" });
       setIsLostFoundDialogOpen(false);
+      setSelectedType("");
       e.currentTarget.reset();
     }
   };
@@ -176,7 +253,13 @@ export function Dashboard() {
                       <Label htmlFor="content">Content</Label>
                       <Textarea id="content" name="content" rows={4} />
                     </div>
-                    <Button type="submit" className="w-full">Add Note</Button>
+                    <div>
+                      <Label htmlFor="file">Upload File (Images, PDFs, Word docs)</Label>
+                      <Input id="file" name="file" type="file" accept="image/*,.pdf,.doc,.docx" />
+                    </div>
+                    <Button type="submit" className="w-full" disabled={uploading}>
+                      {uploading ? "Uploading..." : "Add Note"}
+                    </Button>
                   </form>
                 </DialogContent>
               </Dialog>
@@ -285,7 +368,7 @@ export function Dashboard() {
                     </div>
                     <div>
                       <Label htmlFor="item-type">Type</Label>
-                      <Select name="type" required>
+                      <Select name="type" required onValueChange={setSelectedType}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
@@ -307,7 +390,15 @@ export function Dashboard() {
                       <Label htmlFor="item-contact">Contact Info</Label>
                       <Input id="item-contact" name="contact_info" placeholder="Email or phone number" />
                     </div>
-                    <Button type="submit" className="w-full">Report Item</Button>
+                    {selectedType === "lost" && (
+                      <div>
+                        <Label htmlFor="image">Upload Image (Lost items only)</Label>
+                        <Input id="image" name="image" type="file" accept="image/*" />
+                      </div>
+                    )}
+                    <Button type="submit" className="w-full" disabled={uploading}>
+                      {uploading ? "Uploading..." : "Report Item"}
+                    </Button>
                   </form>
                 </DialogContent>
               </Dialog>
