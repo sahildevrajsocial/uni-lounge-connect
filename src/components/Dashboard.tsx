@@ -1,6 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { 
   BookOpen, Search, Calendar, Trophy, Plus, TrendingUp, 
   Users, Star, MapPin, Clock, Download, Eye
@@ -31,6 +40,90 @@ const topContributors = [
 ];
 
 export function Dashboard() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [isLostFoundDialogOpen, setIsLostFoundDialogOpen] = useState(false);
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+
+  const handleAddNote = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user) {
+      toast({ title: "Please sign in to add notes", variant: "destructive" });
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+    const { error } = await supabase.from('notes').insert({
+      title: formData.get('title') as string,
+      content: formData.get('content') as string,
+      subject: formData.get('subject') as string,
+      course: formData.get('course') as string,
+      semester: formData.get('semester') as string,
+      user_id: user.id
+    });
+
+    if (error) {
+      toast({ title: "Error adding note", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Note added successfully!" });
+      setIsNoteDialogOpen(false);
+      e.currentTarget.reset();
+    }
+  };
+
+  const handleReportItem = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user) {
+      toast({ title: "Please sign in to report items", variant: "destructive" });
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+    const { error } = await supabase.from('lost_found').insert({
+      title: formData.get('title') as string,
+      description: formData.get('description') as string,
+      type: formData.get('type') as string,
+      location: formData.get('location') as string,
+      contact_info: formData.get('contact_info') as string,
+      user_id: user.id
+    });
+
+    if (error) {
+      toast({ title: "Error reporting item", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Item reported successfully!" });
+      setIsLostFoundDialogOpen(false);
+      e.currentTarget.reset();
+    }
+  };
+
+  const handleCreateEvent = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!user) {
+      toast({ title: "Please sign in to create events", variant: "destructive" });
+      return;
+    }
+
+    const formData = new FormData(e.currentTarget);
+    const { error } = await supabase.from('events').insert({
+      title: formData.get('title') as string,
+      description: formData.get('description') as string,
+      location: formData.get('location') as string,
+      event_date: formData.get('event_date') as string,
+      max_attendees: parseInt(formData.get('max_attendees') as string) || null,
+      user_id: user.id
+    });
+
+    if (error) {
+      toast({ title: "Error creating event", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Event created successfully!" });
+      setIsEventDialogOpen(false);
+      e.currentTarget.reset();
+    }
+  };
+
   return (
     <section id="dashboard" className="py-20">
       <div className="container mx-auto px-4">
@@ -51,10 +144,42 @@ export function Dashboard() {
                 <BookOpen className="h-5 w-5 text-primary" />
                 <CardTitle>Recent Study Materials</CardTitle>
               </div>
-              <Button size="sm" className="bg-primary hover:bg-primary-dark">
-                <Plus className="h-4 w-4 mr-2" />
-                Upload Notes
-              </Button>
+              <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="bg-primary hover:bg-primary-dark">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Upload Notes
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Note</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleAddNote} className="space-y-4">
+                    <div>
+                      <Label htmlFor="title">Title</Label>
+                      <Input id="title" name="title" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="subject">Subject</Label>
+                      <Input id="subject" name="subject" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="course">Course</Label>
+                      <Input id="course" name="course" />
+                    </div>
+                    <div>
+                      <Label htmlFor="semester">Semester</Label>
+                      <Input id="semester" name="semester" />
+                    </div>
+                    <div>
+                      <Label htmlFor="content">Content</Label>
+                      <Textarea id="content" name="content" rows={4} />
+                    </div>
+                    <Button type="submit" className="w-full">Add Note</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -142,10 +267,50 @@ export function Dashboard() {
                 <Search className="h-5 w-5 text-accent" />
                 <CardTitle>Lost & Found</CardTitle>
               </div>
-              <Button size="sm" className="bg-accent hover:bg-accent-light">
-                <Plus className="h-4 w-4 mr-2" />
-                Report Item
-              </Button>
+              <Dialog open={isLostFoundDialogOpen} onOpenChange={setIsLostFoundDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="bg-accent hover:bg-accent-light">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Report Item
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Report Lost/Found Item</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleReportItem} className="space-y-4">
+                    <div>
+                      <Label htmlFor="item-title">Item Name</Label>
+                      <Input id="item-title" name="title" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="item-type">Type</Label>
+                      <Select name="type" required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="lost">Lost</SelectItem>
+                          <SelectItem value="found">Found</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="item-location">Location</Label>
+                      <Input id="item-location" name="location" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="item-description">Description</Label>
+                      <Textarea id="item-description" name="description" rows={3} />
+                    </div>
+                    <div>
+                      <Label htmlFor="item-contact">Contact Info</Label>
+                      <Input id="item-contact" name="contact_info" placeholder="Email or phone number" />
+                    </div>
+                    <Button type="submit" className="w-full">Report Item</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -176,10 +341,42 @@ export function Dashboard() {
                 <Calendar className="h-5 w-5 text-secondary" />
                 <CardTitle>Upcoming Events</CardTitle>
               </div>
-              <Button size="sm" className="bg-secondary hover:bg-secondary-light">
-                <Plus className="h-4 w-4 mr-2" />
-                Create Event
-              </Button>
+              <Dialog open={isEventDialogOpen} onOpenChange={setIsEventDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button size="sm" className="bg-secondary hover:bg-secondary-light">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Event
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Event</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateEvent} className="space-y-4">
+                    <div>
+                      <Label htmlFor="event-title">Event Title</Label>
+                      <Input id="event-title" name="title" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="event-description">Description</Label>
+                      <Textarea id="event-description" name="description" rows={3} />
+                    </div>
+                    <div>
+                      <Label htmlFor="event-location">Location</Label>
+                      <Input id="event-location" name="location" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="event-date">Event Date & Time</Label>
+                      <Input id="event-date" name="event_date" type="datetime-local" required />
+                    </div>
+                    <div>
+                      <Label htmlFor="event-attendees">Max Attendees (optional)</Label>
+                      <Input id="event-attendees" name="max_attendees" type="number" min="1" />
+                    </div>
+                    <Button type="submit" className="w-full">Create Event</Button>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
