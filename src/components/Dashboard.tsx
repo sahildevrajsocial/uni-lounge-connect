@@ -432,7 +432,7 @@ export function Dashboard() {
                       <Input id="item-contact" name="contact_info" placeholder="Email or phone number" />
                     </div>
                     <div>
-                      <Label htmlFor="image">Upload Image (Optional)</Label>
+                      <Label htmlFor="image">Upload Image</Label>
                       <Input id="image" name="image" type="file" accept="image/*" />
                     </div>
                     <Button type="submit" className="w-full" disabled={uploading}>
