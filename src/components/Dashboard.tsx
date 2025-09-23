@@ -460,9 +460,21 @@ export function Dashboard() {
                           <span>{new Date(item.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <Badge variant={item.type === 'found' ? 'default' : 'destructive'}>
-                        {item.type === 'found' ? 'Found' : 'Lost'}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        {item.image_url && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => window.open(item.image_url, '_blank')}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </Button>
+                        )}
+                        <Badge variant={item.type === 'found' ? 'default' : 'destructive'}>
+                          {item.type === 'found' ? 'Found' : 'Lost'}
+                        </Badge>
+                      </div>
                     </div>
                   ))}
                 </div>
