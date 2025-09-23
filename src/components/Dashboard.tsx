@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -15,23 +15,6 @@ import {
   Users, Star, MapPin, Clock, Download, Eye
 } from "lucide-react";
 
-const recentNotes = [
-  { title: "Data Structures - Trees & Graphs", subject: "CS301", author: "John Doe", downloads: 234, rating: 4.8 },
-  { title: "Organic Chemistry Lab Manual", subject: "CHEM201", author: "Jane Smith", downloads: 156, rating: 4.6 },
-  { title: "Linear Algebra - Eigen Values", subject: "MATH202", author: "Mike Wilson", downloads: 189, rating: 4.9 }
-];
-
-const lostItems = [
-  { item: "iPhone 13 Pro", location: "Library 2nd Floor", time: "2 hours ago", status: "Lost" },
-  { item: "Blue Backpack", location: "Cafeteria", time: "5 hours ago", status: "Found" },
-  { item: "Scientific Calculator", location: "Lab Building", time: "1 day ago", status: "Lost" }
-];
-
-const upcomingEvents = [
-  { title: "Web Dev Workshop", club: "Tech Club", date: "Tomorrow", attendees: 45, type: "Workshop" },
-  { title: "Annual Hackathon", club: "CS Society", date: "This Weekend", attendees: 234, type: "Competition" },
-  { title: "Career Fair 2024", club: "Placement Cell", date: "Next Week", attendees: 567, type: "Fair" }
-];
 
 const topContributors = [
   { name: "Sarah Johnson", points: 2340, contributions: 45, rank: 1 },
@@ -47,6 +30,32 @@ export function Dashboard() {
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedType, setSelectedType] = useState("");
+  const [notes, setNotes] = useState<any[]>([]);
+  const [lostFoundItems, setLostFoundItems] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [notesResult, lostFoundResult, eventsResult] = await Promise.all([
+        supabase.from('notes').select('*').order('created_at', { ascending: false }).limit(10),
+        supabase.from('lost_found').select('*').order('created_at', { ascending: false }).limit(10),
+        supabase.from('events').select('*').order('created_at', { ascending: false }).limit(10)
+      ]);
+
+      if (notesResult.data) setNotes(notesResult.data);
+      if (lostFoundResult.data) setLostFoundItems(lostFoundResult.data);
+      if (eventsResult.data) setEvents(eventsResult.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFileUpload = async (file: File, bucket: string) => {
     if (!user) return null;
@@ -115,6 +124,7 @@ export function Dashboard() {
       toast({ title: "Note added successfully!" });
       setIsNoteDialogOpen(false);
       e.currentTarget.reset();
+      fetchData(); // Refresh data
     }
   };
 
@@ -172,6 +182,7 @@ export function Dashboard() {
       setIsLostFoundDialogOpen(false);
       setSelectedType("");
       e.currentTarget.reset();
+      fetchData(); // Refresh data
     }
   };
 
@@ -198,6 +209,7 @@ export function Dashboard() {
       toast({ title: "Event created successfully!" });
       setIsEventDialogOpen(false);
       e.currentTarget.reset();
+      fetchData(); // Refresh data
     }
   };
 
@@ -265,31 +277,37 @@ export function Dashboard() {
               </Dialog>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {recentNotes.map((note, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
-                    <div className="flex-1">
-                      <h4 className="font-medium mb-1">{note.title}</h4>
-                      <div className="flex items-center space-x-3 text-sm text-muted-foreground">
-                        <Badge variant="secondary">{note.subject}</Badge>
-                        <span>by {note.author}</span>
-                        <div className="flex items-center">
-                          <Download className="h-3 w-3 mr-1" />
-                          {note.downloads}
-                        </div>
-                        <div className="flex items-center">
-                          <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
-                          {note.rating}
+              {loading ? (
+                <div className="text-center text-muted-foreground">Loading notes...</div>
+              ) : notes.length === 0 ? (
+                <div className="text-center text-muted-foreground">No notes uploaded yet</div>
+              ) : (
+                <div className="space-y-4">
+                  {notes.map((note) => (
+                    <div key={note.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
+                      <div className="flex-1">
+                        <h4 className="font-medium mb-1">{note.title}</h4>
+                        <div className="flex items-center space-x-3 text-sm text-muted-foreground">
+                          {note.subject && <Badge variant="secondary">{note.subject}</Badge>}
+                          {note.course && <span>{note.course}</span>}
+                          <div className="flex items-center">
+                            <Download className="h-3 w-3 mr-1" />
+                            {note.downloads || 0}
+                          </div>
+                          <div className="flex items-center">
+                            <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
+                            {note.likes || 0}
+                          </div>
                         </div>
                       </div>
+                      <Button size="sm" variant="outline">
+                        <Eye className="h-4 w-4 mr-2" />
+                        View
+                      </Button>
                     </div>
-                    <Button size="sm" variant="outline">
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </Button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -404,24 +422,30 @@ export function Dashboard() {
               </Dialog>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {lostItems.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div>
-                      <h4 className="font-medium">{item.item}</h4>
-                      <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                        <MapPin className="h-3 w-3" />
-                        <span>{item.location}</span>
-                        <Clock className="h-3 w-3" />
-                        <span>{item.time}</span>
+              {loading ? (
+                <div className="text-center text-muted-foreground">Loading items...</div>
+              ) : lostFoundItems.length === 0 ? (
+                <div className="text-center text-muted-foreground">No items reported yet</div>
+              ) : (
+                <div className="space-y-3">
+                  {lostFoundItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                      <div>
+                        <h4 className="font-medium">{item.title}</h4>
+                        <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                          <MapPin className="h-3 w-3" />
+                          <span>{item.location}</span>
+                          <Clock className="h-3 w-3" />
+                          <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                        </div>
                       </div>
+                      <Badge variant={item.type === 'found' ? 'default' : 'destructive'}>
+                        {item.type === 'found' ? 'Found' : 'Lost'}
+                      </Badge>
                     </div>
-                    <Badge variant={item.status === 'Found' ? 'default' : 'destructive'}>
-                      {item.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -470,26 +494,32 @@ export function Dashboard() {
               </Dialog>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {upcomingEvents.map((event, index) => (
-                  <div key={index} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium">{event.title}</h4>
-                      <Badge variant="outline">{event.type}</Badge>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{event.club}</span>
-                      <div className="flex items-center space-x-3">
-                        <span>{event.date}</span>
-                        <div className="flex items-center">
-                          <Users className="h-3 w-3 mr-1" />
-                          {event.attendees}
+              {loading ? (
+                <div className="text-center text-muted-foreground">Loading events...</div>
+              ) : events.length === 0 ? (
+                <div className="text-center text-muted-foreground">No events created yet</div>
+              ) : (
+                <div className="space-y-3">
+                  {events.map((event) => (
+                    <div key={event.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{event.title}</h4>
+                        <Badge variant="outline">Event</Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-sm text-muted-foreground">
+                        <span>{event.location}</span>
+                        <div className="flex items-center space-x-3">
+                          <span>{new Date(event.event_date).toLocaleDateString()}</span>
+                          <div className="flex items-center">
+                            <Users className="h-3 w-3 mr-1" />
+                            {event.current_attendees || 0}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
