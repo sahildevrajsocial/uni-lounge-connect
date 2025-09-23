@@ -300,20 +300,39 @@ export function Dashboard() {
                           </div>
                         </div>
                       </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => {
-                          if (note.file_url) {
-                            window.open(note.file_url, '_blank');
-                          } else {
-                            toast({ title: "No file attached to this note" });
-                          }
-                        }}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            if (note.file_url) {
+                              window.open(note.file_url, '_blank');
+                            } else {
+                              toast({ title: "No file attached to this note" });
+                            }
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View
+                        </Button>
+                        {note.file_url && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => {
+                              const link = document.createElement('a');
+                              link.href = note.file_url;
+                              link.download = `${note.title}.${note.file_url.split('.').pop()}`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                            }}
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
