@@ -141,15 +141,9 @@ export function Dashboard() {
     const itemType = formData.get('type') as string;
     
     let imageUrl = null;
-    // Only allow image uploads for "lost" items, not "found" items
+    // Allow image uploads for both "lost" and "found" items
     if (file && file.size > 0) {
-      if (itemType === 'found') {
-        toast({ title: "Images not allowed", description: "Image uploads are only allowed for lost items", variant: "destructive" });
-        setUploading(false);
-        return;
-      }
-      
-      // Validate file type for lost items (images only)
+      // Validate file type (images only)
       const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         toast({ title: "Invalid file type", description: "Please upload images only", variant: "destructive" });
@@ -437,12 +431,10 @@ export function Dashboard() {
                       <Label htmlFor="item-contact">Contact Info</Label>
                       <Input id="item-contact" name="contact_info" placeholder="Email or phone number" />
                     </div>
-                    {selectedType === "lost" && (
-                      <div>
-                        <Label htmlFor="image">Upload Image (Lost items only)</Label>
-                        <Input id="image" name="image" type="file" accept="image/*" />
-                      </div>
-                    )}
+                    <div>
+                      <Label htmlFor="image">Upload Image (Optional)</Label>
+                      <Input id="image" name="image" type="file" accept="image/*" />
+                    </div>
                     <Button type="submit" className="w-full" disabled={uploading}>
                       {uploading ? "Uploading..." : "Report Item"}
                     </Button>
