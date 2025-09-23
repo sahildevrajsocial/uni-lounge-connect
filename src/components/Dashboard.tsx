@@ -300,7 +300,17 @@ export function Dashboard() {
                           </div>
                         </div>
                       </div>
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          if (note.file_url) {
+                            window.open(note.file_url, '_blank');
+                          } else {
+                            toast({ title: "No file attached to this note" });
+                          }
+                        }}
+                      >
                         <Eye className="h-4 w-4 mr-2" />
                         View
                       </Button>
