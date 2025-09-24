@@ -42,9 +42,30 @@ export function Dashboard() {
   const fetchData = async () => {
     try {
       const [notesResult, lostFoundResult, eventsResult] = await Promise.all([
-        supabase.from('notes').select('*').order('created_at', { ascending: false }).limit(10),
-        supabase.from('lost_found').select('*').order('created_at', { ascending: false }).limit(10),
-        supabase.from('events').select('*').order('created_at', { ascending: false }).limit(10)
+        supabase
+          .from('notes')
+          .select(`
+            *,
+            profiles!inner(full_name, username)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('lost_found')
+          .select(`
+            *,
+            profiles!inner(full_name, username)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(10),
+        supabase
+          .from('events')
+          .select(`
+            *,
+            profiles!inner(full_name, username)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(10)
       ]);
 
       if (notesResult.data) setNotes(notesResult.data);
@@ -281,6 +302,11 @@ export function Dashboard() {
                     <div key={note.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
                       <div className="flex-1">
                         <h4 className="font-medium mb-1">{note.title}</h4>
+                        <div className="flex items-center space-x-3 text-sm text-muted-foreground mb-2">
+                          <span className="font-medium text-primary">
+                            by {note.profiles?.full_name || note.profiles?.username || 'Unknown'}
+                          </span>
+                        </div>
                         <div className="flex items-center space-x-3 text-sm text-muted-foreground">
                           {note.subject && <Badge variant="secondary">{note.subject}</Badge>}
                           {note.course && <span>{note.course}</span>}
@@ -453,6 +479,9 @@ export function Dashboard() {
                     <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
                       <div>
                         <h4 className="font-medium">{item.title}</h4>
+                        <div className="text-sm text-primary mb-1">
+                          by {item.profiles?.full_name || item.profiles?.username || 'Unknown'}
+                        </div>
                         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                           <MapPin className="h-3 w-3" />
                           <span>{item.location}</span>
@@ -538,6 +567,9 @@ export function Dashboard() {
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium">{event.title}</h4>
                         <Badge variant="outline">Event</Badge>
+                      </div>
+                      <div className="text-sm text-primary mb-2">
+                        by {event.profiles?.full_name || event.profiles?.username || 'Unknown'}
                       </div>
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <span>{event.location}</span>
