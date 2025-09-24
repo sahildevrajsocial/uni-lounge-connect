@@ -53,6 +53,14 @@ export function Navigation() {
                 <Button 
                   variant="ghost" 
                   size="sm"
+                  onClick={() => navigate('/profile')}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
                   onClick={signOut}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
@@ -109,15 +117,29 @@ export function Navigation() {
             ))}
             <div className="pt-3 border-t space-y-2">
               {user ? (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="w-full justify-start"
-                  onClick={signOut}
-                >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
-                </Button>
+                <>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full justify-start"
+                    onClick={() => {
+                      navigate('/profile');
+                      setIsOpen(false);
+                    }}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full justify-start"
+                    onClick={signOut}
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </>
               ) : (
                 <>
                   <Button 
