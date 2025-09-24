@@ -304,7 +304,7 @@ export function Dashboard() {
                         <h4 className="font-medium mb-1">{note.title}</h4>
                         <div className="flex items-center space-x-3 text-sm text-muted-foreground mb-2">
                           <span className="font-medium text-primary">
-                            by {note.profiles?.full_name || note.profiles?.username || 'Unknown'}
+                            by {note.profiles?.full_name || note.profiles?.username || `User ${note.user_id.slice(0, 8)}`}
                           </span>
                         </div>
                         <div className="flex items-center space-x-3 text-sm text-muted-foreground">
@@ -480,7 +480,7 @@ export function Dashboard() {
                       <div>
                         <h4 className="font-medium">{item.title}</h4>
                         <div className="text-sm text-primary mb-1">
-                          by {item.profiles?.full_name || item.profiles?.username || 'Unknown'}
+                          by {item.profiles?.full_name || item.profiles?.username || `User ${item.user_id.slice(0, 8)}`}
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                           <MapPin className="h-3 w-3" />
@@ -569,7 +569,7 @@ export function Dashboard() {
                         <Badge variant="outline">Event</Badge>
                       </div>
                       <div className="text-sm text-primary mb-2">
-                        by {event.profiles?.full_name || event.profiles?.username || 'Unknown'}
+                        by {event.profiles?.full_name || event.profiles?.username || `User ${event.user_id.slice(0, 8)}`}
                       </div>
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <span>{event.location}</span>
