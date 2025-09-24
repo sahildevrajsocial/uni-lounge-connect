@@ -46,7 +46,7 @@ export function Dashboard() {
           .from('notes')
           .select(`
             *,
-            profiles!inner(full_name, username)
+            profiles(full_name, username)
           `)
           .order('created_at', { ascending: false })
           .limit(10),
@@ -54,7 +54,7 @@ export function Dashboard() {
           .from('lost_found')
           .select(`
             *,
-            profiles!inner(full_name, username)
+            profiles(full_name, username)
           `)
           .order('created_at', { ascending: false })
           .limit(10),
@@ -62,7 +62,7 @@ export function Dashboard() {
           .from('events')
           .select(`
             *,
-            profiles!inner(full_name, username)
+            profiles(full_name, username)
           `)
           .order('created_at', { ascending: false })
           .limit(10)
