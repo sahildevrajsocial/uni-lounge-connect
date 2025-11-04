@@ -208,16 +208,23 @@ export function Dashboard() {
       return;
     }
 
+    setUploading(true);
     const formData = new FormData(e.currentTarget);
+    
+    // Convert datetime-local to ISO timestamp with timezone
+    const eventDateStr = formData.get('event_date') as string;
+    const eventDate = new Date(eventDateStr).toISOString();
+    
     const { error } = await supabase.from('events').insert({
       title: formData.get('title') as string,
       description: formData.get('description') as string,
       location: formData.get('location') as string,
-      event_date: formData.get('event_date') as string,
+      event_date: eventDate,
       max_attendees: parseInt(formData.get('max_attendees') as string) || null,
       user_id: user.id
     });
 
+    setUploading(false);
     if (error) {
       toast({ title: "Error creating event", description: error.message, variant: "destructive" });
     } else {
@@ -550,7 +557,9 @@ export function Dashboard() {
                       <Label htmlFor="event-attendees">Max Attendees (optional)</Label>
                       <Input id="event-attendees" name="max_attendees" type="number" min="1" />
                     </div>
-                    <Button type="submit" className="w-full">Create Event</Button>
+                    <Button type="submit" className="w-full" disabled={uploading}>
+                      {uploading ? "Creating..." : "Create Event"}
+                    </Button>
                   </form>
                 </DialogContent>
               </Dialog>
