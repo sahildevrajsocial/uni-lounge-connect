@@ -10,6 +10,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { usePresence } from "@/hooks/usePresence";
 import { 
   BookOpen, Search, Calendar, Trophy, Plus, TrendingUp, 
   Users, Star, MapPin, Clock, Download, Eye
@@ -25,6 +26,7 @@ const topContributors = [
 export function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { onlineUsers } = usePresence();
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [isLostFoundDialogOpen, setIsLostFoundDialogOpen] = useState(false);
   const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
@@ -407,8 +409,10 @@ export function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-accent mb-1">234</div>
-                  <div className="text-sm text-muted-foreground">Students Online</div>
+                  <div className="text-2xl font-bold text-accent mb-1">{onlineUsers}</div>
+                  <div className="text-sm text-muted-foreground">
+                    {onlineUsers === 1 ? 'Student' : 'Students'} Online
+                  </div>
                 </div>
               </CardContent>
             </Card>
