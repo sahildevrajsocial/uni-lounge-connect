@@ -371,34 +371,36 @@ export function Dashboard() {
 
           {/* Quick Stats */}
           <div className="space-y-6">
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="h-5 w-5 text-secondary" />
-                  <span>Your Impact</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Points Earned</span>
-                    <span className="font-bold text-secondary">1,234</span>
+            {user && (
+              <Card className="shadow-soft">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5 text-secondary" />
+                    <span>Your Impact</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Points Earned</span>
+                      <span className="font-bold text-secondary">1,234</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Notes Shared</span>
+                      <span className="font-bold">23</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Items Helped Find</span>
+                      <span className="font-bold">7</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Campus Rank</span>
+                      <Badge className="bg-accent hover:bg-accent-light">#45</Badge>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Notes Shared</span>
-                    <span className="font-bold">23</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Items Helped Find</span>
-                    <span className="font-bold">7</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Campus Rank</span>
-                    <Badge className="bg-accent hover:bg-accent-light">#45</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
 
             <Card className="shadow-soft">
               <CardHeader>
