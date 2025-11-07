@@ -402,22 +402,24 @@ export function Dashboard() {
               </Card>
             )}
 
-            <Card className="shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="h-5 w-5 text-accent" />
-                  <span>Active Now</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-accent mb-1">{onlineUsers}</div>
-                  <div className="text-sm text-muted-foreground">
-                    {onlineUsers === 1 ? 'Student' : 'Students'} Online
+            {user && (
+              <Card className="shadow-soft">
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Users className="h-5 w-5 text-accent" />
+                    <span>Active Now</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-accent mb-1">{onlineUsers}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {onlineUsers === 1 ? 'Student' : 'Students'} Online
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
