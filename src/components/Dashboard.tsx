@@ -36,10 +36,20 @@ export function Dashboard() {
   const [lostFoundItems, setLostFoundItems] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userStats, setUserStats] = useState({
+    points: 0,
+    notesCount: 0,
+    lostFoundCount: 0,
+    eventsCount: 0,
+    rank: 0
+  });
 
   useEffect(() => {
     fetchData();
-  }, []);
+    if (user) {
+      fetchUserStats();
+    }
+  }, [user]);
 
   const fetchData = async () => {
     try {
@@ -77,6 +87,51 @@ export function Dashboard() {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserStats = async () => {
+    if (!user) return;
+
+    try {
+      // Fetch user's profile with points
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('points')
+        .eq('user_id', user.id)
+        .single();
+
+      // Count user's contributions
+      const [notesCount, lostFoundCount, eventsCount] = await Promise.all([
+        supabase
+          .from('notes')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+        supabase
+          .from('lost_found')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+        supabase
+          .from('events')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+      ]);
+
+      // Calculate rank (count how many users have more points)
+      const { count: higherRankedUsers } = await supabase
+        .from('profiles')
+        .select('user_id', { count: 'exact', head: true })
+        .gt('points', profile?.points || 0);
+
+      setUserStats({
+        points: profile?.points || 0,
+        notesCount: notesCount.count || 0,
+        lostFoundCount: lostFoundCount.count || 0,
+        eventsCount: eventsCount.count || 0,
+        rank: (higherRankedUsers || 0) + 1
+      });
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
     }
   };
 
@@ -144,10 +199,11 @@ export function Dashboard() {
     if (error) {
       toast({ title: "Error adding note", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Note added successfully!" });
+      toast({ title: "Note added successfully! +10 points" });
       setIsNoteDialogOpen(false);
       e.currentTarget.reset();
-      fetchData(); // Refresh data
+      fetchData();
+      fetchUserStats(); // Refresh user stats
     }
   };
 
@@ -195,11 +251,12 @@ export function Dashboard() {
     if (error) {
       toast({ title: "Error reporting item", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Item reported successfully!" });
+      toast({ title: "Item reported successfully! +50 points" });
       setIsLostFoundDialogOpen(false);
       setSelectedType("");
       e.currentTarget.reset();
-      fetchData(); // Refresh data
+      fetchData();
+      fetchUserStats(); // Refresh user stats
     }
   };
 
@@ -230,10 +287,11 @@ export function Dashboard() {
     if (error) {
       toast({ title: "Error creating event", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Event created successfully!" });
+      toast({ title: "Event created successfully! +20 points" });
       setIsEventDialogOpen(false);
       e.currentTarget.reset();
-      fetchData(); // Refresh data
+      fetchData();
+      fetchUserStats(); // Refresh user stats
     }
   };
 
@@ -383,19 +441,23 @@ export function Dashboard() {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Points Earned</span>
-                      <span className="font-bold text-secondary">1,234</span>
+                      <span className="font-bold text-secondary">{userStats.points}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Notes Shared</span>
-                      <span className="font-bold">23</span>
+                      <span className="font-bold">{userStats.notesCount}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">Items Helped Find</span>
-                      <span className="font-bold">7</span>
+                      <span className="text-sm text-muted-foreground">Lost & Found</span>
+                      <span className="font-bold">{userStats.lostFoundCount}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Events Created</span>
+                      <span className="font-bold">{userStats.eventsCount}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Campus Rank</span>
-                      <Badge className="bg-accent hover:bg-accent-light">#45</Badge>
+                      <Badge className="bg-accent hover:bg-accent-light">#{userStats.rank}</Badge>
                     </div>
                   </div>
                 </CardContent>
