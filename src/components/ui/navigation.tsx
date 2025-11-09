@@ -4,6 +4,14 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Search, Heart, Calendar, Trophy, User, Menu, X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 
 const navItems = [
   { icon: BookOpen, label: "Notes", href: "#notes" },
@@ -14,8 +22,14 @@ const navItems = [
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const handleSearchSelect = (query: string) => {
+    setSearchOpen(false);
+    navigate(`/search?q=${encodeURIComponent(query)}`);
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -33,6 +47,15 @@ export function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center space-x-2"
+            >
+              <Search className="h-4 w-4" />
+              <span>Search</span>
+            </Button>
             {navItems.map((item) => (
               <a
                 key={item.label}
@@ -104,6 +127,18 @@ export function Navigation() {
           isOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
         )}>
           <div className="py-4 space-y-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start"
+              onClick={() => {
+                setSearchOpen(true);
+                setIsOpen(false);
+              }}
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </Button>
             {navItems.map((item) => (
               <a
                 key={item.label}
@@ -163,6 +198,39 @@ export function Navigation() {
           </div>
         </div>
       </div>
+
+      {/* Search Command Dialog */}
+      <CommandDialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <CommandInput placeholder="Search for notes, events, or items..." />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup heading="Quick Actions">
+            <CommandItem onSelect={() => handleSearchSelect('notes')}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              <span>Search Notes</span>
+            </CommandItem>
+            <CommandItem onSelect={() => handleSearchSelect('events')}>
+              <Calendar className="mr-2 h-4 w-4" />
+              <span>Search Events</span>
+            </CommandItem>
+            <CommandItem onSelect={() => handleSearchSelect('lost and found')}>
+              <Search className="mr-2 h-4 w-4" />
+              <span>Search Lost & Found</span>
+            </CommandItem>
+          </CommandGroup>
+          <CommandGroup heading="Suggestions">
+            <CommandItem onSelect={() => handleSearchSelect('mathematics')}>
+              Search "mathematics"
+            </CommandItem>
+            <CommandItem onSelect={() => handleSearchSelect('physics')}>
+              Search "physics"
+            </CommandItem>
+            <CommandItem onSelect={() => handleSearchSelect('computer science')}>
+              Search "computer science"
+            </CommandItem>
+          </CommandGroup>
+        </CommandList>
+      </CommandDialog>
     </nav>
   );
 }
