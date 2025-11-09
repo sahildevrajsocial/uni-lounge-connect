@@ -215,14 +215,14 @@ const Search = () => {
                       <div className="space-y-2">
                         <Label htmlFor="type">Type</Label>
                         <Select
-                          value={filters.lostFoundType}
-                          onValueChange={(value) => setFilters({ ...filters, lostFoundType: value as any })}
+                          value={filters.lostFoundType || "all"}
+                          onValueChange={(value) => setFilters({ ...filters, lostFoundType: value === "all" ? "" : value as any })}
                         >
                           <SelectTrigger id="type">
                             <SelectValue placeholder="All Types" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value=" ">All Types</SelectItem>
+                            <SelectItem value="all">All Types</SelectItem>
                             <SelectItem value="lost">Lost</SelectItem>
                             <SelectItem value="found">Found</SelectItem>
                           </SelectContent>
@@ -231,14 +231,14 @@ const Search = () => {
                       <div className="space-y-2">
                         <Label htmlFor="status">Status</Label>
                         <Select
-                          value={filters.lostFoundStatus}
-                          onValueChange={(value) => setFilters({ ...filters, lostFoundStatus: value as any })}
+                          value={filters.lostFoundStatus || "all"}
+                          onValueChange={(value) => setFilters({ ...filters, lostFoundStatus: value === "all" ? "" : value as any })}
                         >
                           <SelectTrigger id="status">
                             <SelectValue placeholder="All Statuses" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value=" ">All Statuses</SelectItem>
+                            <SelectItem value="all">All Statuses</SelectItem>
                             <SelectItem value="active">Active</SelectItem>
                             <SelectItem value="resolved">Resolved</SelectItem>
                           </SelectContent>
