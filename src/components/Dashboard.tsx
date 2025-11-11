@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePresence } from "@/hooks/usePresence";
 import { 
   BookOpen, Search, Calendar, Trophy, Plus, TrendingUp, 
-  Users, Star, MapPin, Clock, Download, Eye
+  Users, Star, MapPin, Clock, Download, Eye, Trash2
 } from "lucide-react";
 
 
@@ -295,6 +295,57 @@ export function Dashboard() {
     }
   };
 
+  const handleDeleteNote = async (noteId: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('notes')
+      .delete()
+      .eq('id', noteId);
+
+    if (error) {
+      toast({ title: "Error deleting note", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Note deleted successfully" });
+      fetchData();
+      fetchUserStats();
+    }
+  };
+
+  const handleDeleteLostFound = async (itemId: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('lost_found')
+      .delete()
+      .eq('id', itemId);
+
+    if (error) {
+      toast({ title: "Error deleting item", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Item deleted successfully" });
+      fetchData();
+      fetchUserStats();
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', eventId);
+
+    if (error) {
+      toast({ title: "Error deleting event", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Event deleted successfully" });
+      fetchData();
+      fetchUserStats();
+    }
+  };
+
   return (
     <section id="dashboard" className="py-20">
       <div className="container mx-auto px-4">
@@ -417,6 +468,15 @@ export function Dashboard() {
                           >
                             <Download className="h-4 w-4 mr-2" />
                             Download
+                          </Button>
+                        )}
+                        {user && note.user_id === user.id && (
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => handleDeleteNote(note.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                         )}
                       </div>
@@ -578,6 +638,15 @@ export function Dashboard() {
                         <Badge variant={item.type === 'found' ? 'default' : 'destructive'}>
                           {item.type === 'found' ? 'Found' : 'Lost'}
                         </Badge>
+                        {user && item.user_id === user.id && (
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => handleDeleteLostFound(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -643,7 +712,18 @@ export function Dashboard() {
                     <div key={event.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium">{event.title}</h4>
-                        <Badge variant="outline">Event</Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline">Event</Badge>
+                          {user && event.user_id === user.id && (
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => handleDeleteEvent(event.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       <div className="text-sm text-primary mb-2">
                         by {event.profiles?.full_name || event.profiles?.username || `User ${event.user_id.slice(0, 8)}`}
