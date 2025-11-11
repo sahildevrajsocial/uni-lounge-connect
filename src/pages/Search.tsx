@@ -10,10 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
 import { useSearch, type ContentType, type SearchFilters } from '@/hooks/useSearch';
-import { Search as SearchIcon, BookOpen, Calendar, Package, X, Filter } from 'lucide-react';
+import { Search as SearchIcon, BookOpen, Calendar, Package, X, Filter, Eye, Download } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
 const Search = () => {
+  const { toast } = useToast();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   
@@ -322,10 +324,45 @@ const Search = () => {
                         {result.description || result.content || 'No description available'}
                       </p>
                       {result.type === 'note' && (
-                        <div className="flex gap-2 text-sm text-muted-foreground">
-                          {result.subject && <span>Subject: {result.subject}</span>}
-                          {result.course && <span>• Course: {result.course}</span>}
-                        </div>
+                        <>
+                          <div className="flex gap-2 text-sm text-muted-foreground mb-3">
+                            {result.subject && <span>Subject: {result.subject}</span>}
+                            {result.course && <span>• Course: {result.course}</span>}
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                if (result.file_url) {
+                                  window.open(result.file_url, '_blank');
+                                } else {
+                                  toast({ title: "No file attached to this note" });
+                                }
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View
+                            </Button>
+                            {result.file_url && (
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {
+                                  const link = document.createElement('a');
+                                  link.href = result.file_url;
+                                  link.download = `${result.title}.${result.file_url.split('.').pop()}`;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }}
+                              >
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </Button>
+                            )}
+                          </div>
+                        </>
                       )}
                       {result.type === 'event' && (
                         <div className="flex gap-2 text-sm text-muted-foreground">
@@ -336,12 +373,24 @@ const Search = () => {
                         </div>
                       )}
                       {result.type === 'lost_found' && (
-                        <div className="flex gap-2 text-sm text-muted-foreground">
-                          {result.location && <span>📍 {result.location}</span>}
-                          {result.status && (
-                            <span>• Status: {result.status}</span>
+                        <>
+                          <div className="flex gap-2 text-sm text-muted-foreground mb-3">
+                            {result.location && <span>📍 {result.location}</span>}
+                            {result.status && (
+                              <span>• Status: {result.status}</span>
+                            )}
+                          </div>
+                          {result.image_url && (
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => window.open(result.image_url, '_blank')}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Image
+                            </Button>
                           )}
-                        </div>
+                        </>
                       )}
                     </CardContent>
                   </Card>
