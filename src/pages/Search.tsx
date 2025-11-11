@@ -374,22 +374,24 @@ const Search = () => {
                       )}
                       {result.type === 'lost_found' && (
                         <>
-                          <div className="flex gap-2 text-sm text-muted-foreground mb-3">
+                          {result.image_url && (
+                            <div 
+                              className="mb-3 w-full h-48 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-smooth border border-border"
+                              onClick={() => window.open(result.image_url, '_blank')}
+                            >
+                              <img 
+                                src={result.image_url} 
+                                alt={result.title}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex gap-2 text-sm text-muted-foreground">
                             {result.location && <span>📍 {result.location}</span>}
                             {result.status && (
                               <span>• Status: {result.status}</span>
                             )}
                           </div>
-                          {result.image_url && (
-                            <Button 
-                              size="sm" 
-                              variant="outline"
-                              onClick={() => window.open(result.image_url, '_blank')}
-                            >
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Image
-                            </Button>
-                          )}
                         </>
                       )}
                     </CardContent>

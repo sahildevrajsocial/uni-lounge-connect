@@ -611,8 +611,20 @@ export function Dashboard() {
               ) : (
                 <div className="space-y-3">
                   {lostFoundItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                      <div>
+                    <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                      {item.image_url && (
+                        <div 
+                          className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-smooth border border-border"
+                          onClick={() => window.open(item.image_url, '_blank')}
+                        >
+                          <img 
+                            src={item.image_url} 
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
                         <h4 className="font-medium">{item.title}</h4>
                         <div className="text-sm text-primary mb-1">
                           by {item.profiles?.full_name || item.profiles?.username || `User ${item.user_id.slice(0, 8)}`}
@@ -624,17 +636,7 @@ export function Dashboard() {
                           <span>{new Date(item.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        {item.image_url && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => window.open(item.image_url, '_blank')}
-                          >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                        )}
+                      <div className="flex items-center gap-2 flex-shrink-0">
                         <Badge variant={item.type === 'found' ? 'default' : 'destructive'}>
                           {item.type === 'found' ? 'Found' : 'Lost'}
                         </Badge>
