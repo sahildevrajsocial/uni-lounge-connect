@@ -17,12 +17,6 @@ import {
 } from "lucide-react";
 
 
-const topContributors = [
-  { name: "Sarah Johnson", points: 2340, contributions: 45, rank: 1 },
-  { name: "Alex Chen", points: 2156, contributions: 38, rank: 2 },
-  { name: "Maria Garcia", points: 1987, contributions: 42, rank: 3 }
-];
-
 export function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -36,6 +30,7 @@ export function Dashboard() {
   const [lostFoundItems, setLostFoundItems] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [topContributors, setTopContributors] = useState<any[]>([]);
   const [userStats, setUserStats] = useState({
     points: 0,
     notesCount: 0,
@@ -46,9 +41,30 @@ export function Dashboard() {
 
   useEffect(() => {
     fetchData();
+    fetchTopContributors();
     if (user) {
       fetchUserStats();
     }
+
+    // Set up realtime subscription for top contributors
+    const channel = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        () => {
+          fetchTopContributors();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const fetchData = async () => {
@@ -87,6 +103,29 @@ export function Dashboard() {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTopContributors = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, username, points, user_id')
+        .order('points', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+
+      if (data) {
+        const contributors = data.map((profile, index) => ({
+          name: profile.full_name || profile.username || `User ${profile.user_id.slice(0, 8)}`,
+          points: profile.points || 0,
+          rank: index + 1
+        }));
+        setTopContributors(contributors);
+      }
+    } catch (error) {
+      console.error('Error fetching top contributors:', error);
     }
   };
 
