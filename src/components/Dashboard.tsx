@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +21,7 @@ import {
 export function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const { onlineUsers } = usePresence();
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [isLostFoundDialogOpen, setIsLostFoundDialogOpen] = useState(false);
@@ -472,7 +474,11 @@ export function Dashboard() {
               ) : (
                 <div className="space-y-4">
                   {notes.map((note) => (
-                    <div key={note.id} className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
+                    <div 
+                      key={note.id} 
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-smooth cursor-pointer"
+                      onClick={() => navigate(`/notes/${note.id}`)}
+                    >
                       <div className="flex-1">
                         <h4 className="font-medium mb-1">{note.title}</h4>
                         <div className="flex items-center space-x-3 text-sm text-muted-foreground mb-2">
@@ -493,11 +499,12 @@ export function Dashboard() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             if (note.file_url) {
                               window.open(note.file_url, '_blank');
                             } else {
@@ -512,7 +519,8 @@ export function Dashboard() {
                           <Button 
                             size="sm" 
                             variant="outline"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               const link = document.createElement('a');
                               link.href = note.file_url;
                               link.download = `${note.title}.${note.file_url.split('.').pop()}`;
@@ -529,7 +537,10 @@ export function Dashboard() {
                           <Button 
                             size="sm" 
                             variant="destructive"
-                            onClick={() => handleDeleteNote(note.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteNote(note.id);
+                            }}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -666,11 +677,18 @@ export function Dashboard() {
               ) : (
                 <div className="space-y-3">
                   {lostFoundItems.map((item) => (
-                    <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                    <div 
+                      key={item.id} 
+                      className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-smooth cursor-pointer"
+                      onClick={() => navigate(`/lost-found/${item.id}`)}
+                    >
                       {item.image_url && (
                         <div 
                           className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-smooth border border-border"
-                          onClick={() => window.open(item.image_url, '_blank')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(item.image_url, '_blank');
+                          }}
                         >
                           <img 
                             src={item.image_url} 
@@ -691,7 +709,7 @@ export function Dashboard() {
                           <span>{new Date(item.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                         <Badge variant={item.type === 'found' ? 'default' : 'destructive'}>
                           {item.type === 'found' ? 'Found' : 'Lost'}
                         </Badge>
@@ -715,7 +733,10 @@ export function Dashboard() {
                             <Button 
                               size="sm" 
                               variant="destructive"
-                              onClick={() => handleDeleteLostFound(item.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteLostFound(item.id);
+                              }}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -783,16 +804,23 @@ export function Dashboard() {
               ) : (
                 <div className="space-y-3">
                   {events.map((event) => (
-                    <div key={event.id} className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-smooth">
+                    <div 
+                      key={event.id} 
+                      className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-smooth cursor-pointer"
+                      onClick={() => navigate(`/events/${event.id}`)}
+                    >
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium">{event.title}</h4>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                           <Badge variant="outline">Event</Badge>
                           {user && event.user_id === user.id && (
                             <Button 
                               size="sm" 
                               variant="destructive"
-                              onClick={() => handleDeleteEvent(event.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteEvent(event.id);
+                              }}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
