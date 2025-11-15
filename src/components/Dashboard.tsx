@@ -368,6 +368,22 @@ export function Dashboard() {
     }
   };
 
+  const handleUpdateLostFoundStatus = async (itemId: string, newStatus: string) => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('lost_found')
+      .update({ status: newStatus })
+      .eq('id', itemId);
+
+    if (error) {
+      toast({ title: "Error updating status", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: `Status updated to ${newStatus}` });
+      fetchData();
+    }
+  };
+
   const handleDeleteEvent = async (eventId: string) => {
     if (!user) return;
 
@@ -679,14 +695,31 @@ export function Dashboard() {
                         <Badge variant={item.type === 'found' ? 'default' : 'destructive'}>
                           {item.type === 'found' ? 'Found' : 'Lost'}
                         </Badge>
+                        <Badge variant={item.status === 'solved' ? 'secondary' : 'outline'}>
+                          {item.status === 'solved' ? '✓ Solved' : 'Active'}
+                        </Badge>
                         {user && item.user_id === user.id && (
-                          <Button 
-                            size="sm" 
-                            variant="destructive"
-                            onClick={() => handleDeleteLostFound(item.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <>
+                            <Select
+                              value={item.status}
+                              onValueChange={(value) => handleUpdateLostFoundStatus(item.id, value)}
+                            >
+                              <SelectTrigger className="w-28 h-8">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="solved">Solved</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => handleDeleteLostFound(item.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
                         )}
                       </div>
                     </div>

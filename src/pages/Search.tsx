@@ -374,6 +374,14 @@ const Search = () => {
                       )}
                       {result.type === 'lost_found' && (
                         <>
+                          <div className="flex gap-2 mb-3">
+                            <Badge variant={result.lost_found_type === 'found' ? 'default' : 'destructive'}>
+                              {result.lost_found_type === 'found' ? 'Found' : 'Lost'}
+                            </Badge>
+                            <Badge variant={result.status === 'solved' ? 'secondary' : 'outline'}>
+                              {result.status === 'solved' ? '✓ Solved' : 'Active'}
+                            </Badge>
+                          </div>
                           {result.image_url && (
                             <div 
                               className="mb-3 w-full h-48 rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-smooth border border-border"
@@ -388,8 +396,8 @@ const Search = () => {
                           )}
                           <div className="flex gap-2 text-sm text-muted-foreground">
                             {result.location && <span>📍 {result.location}</span>}
-                            {result.status && (
-                              <span>• Status: {result.status}</span>
+                            {result.contact_info && (
+                              <span>• Contact: {result.contact_info}</span>
                             )}
                           </div>
                         </>
