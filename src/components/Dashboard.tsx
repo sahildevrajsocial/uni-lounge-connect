@@ -376,7 +376,8 @@ export function Dashboard() {
     const { error } = await supabase
       .from('lost_found')
       .update({ status: newStatus })
-      .eq('id', itemId);
+      .eq('id', itemId)
+      .eq('user_id', user.id);
 
     if (error) {
       toast({ title: "Error updating status", description: error.message, variant: "destructive" });
